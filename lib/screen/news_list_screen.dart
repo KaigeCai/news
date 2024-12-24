@@ -56,6 +56,20 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
       }
     });
 
+    // 监听 TabController 的动画，处理滑动切换的逻辑
+    _tabController.animation?.addListener(() {
+      final int targetIndex = _tabController.animation!.value.round();
+      if (targetIndex != _tabController.index) {
+        setState(() {
+          _currentType = _categories[targetIndex]['type']!;
+          _page = 1;
+          _newsList.clear(); // 清空当前列表
+          _newsStreamController.add(_newsList); // 通知UI更新为空状态
+        });
+        _loadNews();
+      }
+    });
+
     _loadNews();
 
     // 监听滚动事件，显示或隐藏悬浮按钮
@@ -141,15 +155,18 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
           }
           return StreamBuilder<List<News>>(
             stream: _newsStreamController.stream,
-            builder: (context, snapshot) {
+            builder: (BuildContext context, AsyncSnapshot<List<News>> snapshot) {
               final RefreshController refreshController = _refreshControllers[type]!;
               if (snapshot.connectionState == ConnectionState.waiting && _newsList.isEmpty) {
                 return Center(child: CircularProgressIndicator());
               }
+
               if (snapshot.hasError) {
                 return Center(child: Text('加载错误: ${snapshot.error}'));
               }
+
               final List<News> news = snapshot.data ?? [];
+
               return SmartRefresher(
                 controller: refreshController,
                 enablePullDown: true,
