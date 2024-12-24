@@ -19,25 +19,12 @@ class _NewsAppState extends State<NewsApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      color: Colors.white,
       initialRoute: '/',
       routes: {
         '/': (context) => NewsListScreen(),
         '/news_detail_screen': (context) => NewsDetailScreen(),
       },
-      theme: ThemeData(
-        primaryColor: Colors.blue,
-        colorScheme: ColorScheme(
-          brightness: Brightness.light,
-          primary: Colors.blue,
-          onPrimary: Colors.blue,
-          secondary: Colors.blue,
-          onSecondary: Colors.blue,
-          error: Colors.blue,
-          onError: Colors.blue,
-          surface: Colors.white,
-          onSurface: Colors.black,
-        ),
-      ),
     );
   }
 }

@@ -20,8 +20,8 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
   final List<News> _newsList = [];
   int _page = 1;
   bool _isLoading = false;
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
-  final StreamController<List<News>> _newsStreamController = StreamController<List<News>>();
+  final Map<String, RefreshController> _refreshControllers = {};
+  final StreamController<List<News>> _newsStreamController = StreamController<List<News>>.broadcast();
   final ScrollController _scrollController = ScrollController();
   bool _showScrollToTopButton = false;
   late TabController _tabController;
@@ -49,12 +49,15 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
         setState(() {
           _currentType = _categories[_tabController.index]['type']!;
           _page = 1;
+          _newsList.clear(); // 清空当前列表
+          _newsStreamController.add(_newsList); // 通知UI更新为空状态
         });
         _loadNews();
       }
     });
 
     _loadNews();
+
     // 监听滚动事件，显示或隐藏悬浮按钮
     _scrollController.addListener(() {
       if (_scrollController.offset > 300 && !_showScrollToTopButton) {
@@ -73,7 +76,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
   @override
   void dispose() {
     _newsStreamController.close();
-    _refreshController.dispose();
+    _refreshControllers.forEach((key, controller) => controller.dispose());
     _scrollController.dispose();
     super.dispose();
   }
@@ -88,6 +91,9 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
     try {
       final newsResponse = await _newsService.fetchNews(_page, _currentType);
       setState(() {
+        if (_page == 1) {
+          _newsList.clear();
+        }
         _newsList.addAll(newsResponse.result!.data);
         _page++;
         _newsStreamController.add(_newsList);
@@ -113,12 +119,6 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
     _page = 1;
     _newsList.clear();
     _loadNews();
-    _refreshController.refreshCompleted();
-  }
-
-  void _onLoading() async {
-    _loadNews();
-    _refreshController.loadComplete();
   }
 
   @override
@@ -132,38 +132,49 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
           tabs: _categories.map((category) => Tab(text: category['label'])).toList(),
         ),
       ),
-      body: StreamBuilder<List<News>>(
-          stream: _newsStreamController.stream,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && _newsList.isEmpty) {
-              return Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('加载错误: ${snapshot.error}'));
-            }
-            final List<News> news = snapshot.data ?? [];
-
-            return TabBarView(
-              controller: _tabController,
-              children: _categories.map((category) {
-                return SmartRefresher(
-                  controller: _refreshController,
-                  enablePullDown: true,
-                  enablePullUp: true,
-                  onRefresh: _onRefresh,
-                  onLoading: _onLoading,
-                  footer: PullUpFooter(),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: news.length,
-                    itemBuilder: (context, index) {
-                      return NewsItem(news: news[index]);
-                    },
-                  ),
-                );
-              }).toList(),
-            );
-          }),
+      body: TabBarView(
+        controller: _tabController,
+        children: _categories.map((category) {
+          final String type = category['type']!;
+          if (!_refreshControllers.containsKey(type)) {
+            _refreshControllers[type] = RefreshController(initialRefresh: false);
+          }
+          return StreamBuilder<List<News>>(
+            stream: _newsStreamController.stream,
+            builder: (context, snapshot) {
+              final RefreshController refreshController = _refreshControllers[type]!;
+              if (snapshot.connectionState == ConnectionState.waiting && _newsList.isEmpty) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('加载错误: ${snapshot.error}'));
+              }
+              final List<News> news = snapshot.data ?? [];
+              return SmartRefresher(
+                controller: refreshController,
+                enablePullDown: true,
+                enablePullUp: true,
+                onRefresh: () {
+                  _onRefresh();
+                  refreshController.refreshCompleted();
+                },
+                onLoading: () {
+                  _loadNews();
+                  refreshController.loadComplete();
+                },
+                footer: PullUpFooter(),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: news.length,
+                  itemBuilder: (context, index) {
+                    return NewsItem(news: news[index]);
+                  },
+                ),
+              );
+            },
+          );
+        }).toList(),
+      ),
       floatingActionButton: _showScrollToTopButton
           ? FloatingActionButton(
               onPressed: () {
