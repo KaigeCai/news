@@ -185,10 +185,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
                 );
               },
               mini: true,
-              child: Icon(
-                Icons.arrow_upward,
-                color: Colors.blueAccent,
-              ),
+              child: Icon(Icons.arrow_upward, color: Colors.blueAccent),
             )
           : Container(),
     );

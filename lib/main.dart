@@ -19,7 +19,6 @@ class _NewsAppState extends State<NewsApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      color: Colors.white,
       initialRoute: '/',
       routes: {
         '/': (context) => NewsListScreen(),
