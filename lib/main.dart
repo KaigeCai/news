@@ -24,6 +24,20 @@ class _NewsAppState extends State<NewsApp> {
         '/': (context) => NewsListScreen(),
         '/news_detail_screen': (context) => NewsDetailScreen(),
       },
+      theme: ThemeData(
+        progressIndicatorTheme: ProgressIndicatorThemeData(
+          color: Colors.blue,
+        ),
+        tabBarTheme: TabBarTheme(
+          indicatorColor: Colors.blue,
+          unselectedLabelColor: Colors.black,
+          labelColor: Colors.lightBlue,
+          dividerColor: Colors.transparent,
+        ),
+        colorScheme: ColorScheme.light(
+          primary: Colors.white,
+        ),
+      ),
     );
   }
 }

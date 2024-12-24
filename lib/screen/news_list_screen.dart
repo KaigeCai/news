@@ -50,7 +50,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
           _currentType = _categories[_tabController.index]['type']!;
           _page = 1;
           _newsList.clear(); // 清空当前列表
-          _newsStreamController.add(_newsList); // 通知UI更新为空状态
+          _newsStreamController.add([]); // 通知UI更新为空状态
         });
         _loadNews();
       }
@@ -64,7 +64,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
           _currentType = _categories[targetIndex]['type']!;
           _page = 1;
           _newsList.clear(); // 清空当前列表
-          _newsStreamController.add(_newsList); // 通知UI更新为空状态
+          _newsStreamController.add([]); // 通知UI更新为空状态
         });
         _loadNews();
       }
@@ -104,6 +104,9 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
 
     try {
       final newsResponse = await _newsService.fetchNews(_page, _currentType);
+
+      if (!mounted) return; // 避免组件被销毁时调用 setState
+
       setState(() {
         if (_page == 1) {
           _newsList.clear();
@@ -157,7 +160,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
             stream: _newsStreamController.stream,
             builder: (BuildContext context, AsyncSnapshot<List<News>> snapshot) {
               final RefreshController refreshController = _refreshControllers[type]!;
-              if (snapshot.connectionState == ConnectionState.waiting && _newsList.isEmpty) {
+              if (_newsList.isEmpty) {
                 return Center(child: CircularProgressIndicator());
               }
 
