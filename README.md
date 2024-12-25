@@ -6,7 +6,4 @@
 微信支付宝转账至：[18852284878]()
 AliPay/WeChatPay Transfer To：[18852284878]()
 
-<img src="./picture/pic1.jpg" width="215" height="480">
-<img src="./picture/pic2.jpg" width="215" height="480">
-<img src="./picture/pic3.jpg" width="215" height="480">
-<img src="./picture/pic4.jpg" width="215" height="480">
+<img src="./picture/pic1.jpg" width="215" height="480"> <img src="./picture/pic2.jpg" width="215" height="480"> <img src="./picture/pic3.jpg" width="215" height="480"> <img src="./picture/pic4.jpg" width="215" height="480">
