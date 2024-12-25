@@ -154,7 +154,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
 
     int searchPage = 1;
     bool found = false;
-    const int maxPages = 10;
+    const int maxPages = 2;
 
     while (searchPage <= maxPages && !found) {
       try {
