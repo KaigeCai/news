@@ -144,6 +144,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
       appBar: AppBar(
         title: Text('新闻'),
         bottom: TabBar(
+          tabAlignment: TabAlignment.start,
           controller: _tabController,
           isScrollable: true,
           tabs: _categories.map((category) => Tab(text: category['label'])).toList(),
@@ -182,6 +183,12 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
                   _loadNews();
                   refreshController.loadComplete();
                 },
+                header: ClassicHeader(
+                  idleText: '下拉刷新',
+                  releaseText: '松开刷新',
+                  refreshingText: '正在刷新...',
+                  completeText: '刷新完成',
+                ),
                 footer: PullUpFooter(),
                 child: ListView.builder(
                   controller: _scrollController,
@@ -200,7 +207,7 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
               onPressed: () {
                 _scrollController.animateTo(
                   0,
-                  duration: Duration(milliseconds: 500),
+                  duration: Duration(milliseconds: 10),
                   curve: Curves.easeInOut,
                 );
               },

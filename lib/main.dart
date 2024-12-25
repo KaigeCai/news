@@ -34,9 +34,7 @@ class _NewsAppState extends State<NewsApp> {
           labelColor: Colors.lightBlue,
           dividerColor: Colors.transparent,
         ),
-        colorScheme: ColorScheme.light(
-          primary: Colors.white,
-        ),
+        colorScheme: ColorScheme.light(primary: Colors.white),
       ),
     );
   }

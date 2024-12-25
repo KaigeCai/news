@@ -5,7 +5,7 @@ import 'package:news/config/config.dart';
 import '../model/news.dart';
 
 class NewsService {
-  final Dio dio = Dio();
+  final Dio _dio = Dio();
 
   Future<NewsResponse> fetchNews(int page, String type) async {
     for (final key in keys) {
@@ -13,7 +13,7 @@ class NewsService {
 
       try {
         debugPrint('请求接口: $url');
-        final Response<dynamic> response = await dio.get(url);
+        final Response<dynamic> response = await _dio.get(url);
         debugPrint('返回数据: ${response.data}');
         if (response.statusCode == 200) {
           final newsResponse = NewsResponse.fromJson(response.data);
