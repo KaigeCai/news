@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
@@ -137,11 +138,80 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
     _loadNews();
   }
 
+  void _searchNews(String query) async {
+    if (query.isEmpty) {
+      _page = 1;
+      _newsList.clear();
+      _loadNews(); // 加载全部新闻
+      return;
+    }
+
+    // 清空现有新闻列表以准备新的搜索
+    setState(() {
+      _newsList.clear();
+      _newsStreamController.add([]);
+    });
+
+    int searchPage = 1;
+    bool found = false;
+    const int maxPages = 10;
+
+    while (searchPage <= maxPages && !found) {
+      try {
+        final newsResponse = await _newsService.fetchNews(searchPage, _currentType);
+
+        if (newsResponse.result == null || newsResponse.result!.data.isEmpty) {
+          break; // 当前页没有数据
+        }
+
+        // 筛选当前页的数据
+        final List<News> filteredNews = newsResponse.result!.data.where((news) {
+          return news.title.contains(query) || news.date.contains(query);
+        }).toList();
+
+        if (filteredNews.isNotEmpty) {
+          setState(() {
+            _newsList.addAll(filteredNews);
+            _newsStreamController.add(_newsList);
+          });
+          found = true; // 找到匹配结果
+        } else {
+          searchPage++;
+        }
+      } catch (e) {
+        debugPrint('搜索错误: $e');
+        break;
+      }
+    }
+
+    if (!found) {
+      setState(() {
+        _newsStreamController.add([]); // 显示没有结果
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('新闻'),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: TextField(
+            onChanged: (value) {
+              _searchNews(value);
+            },
+            decoration: InputDecoration(
+              hintText: '搜索新闻...',
+              filled: true,
+              prefixIcon: Icon(CupertinoIcons.search),
+              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+              border: OutlineInputBorder(borderSide: BorderSide.none),
+            ),
+            style: TextStyle(fontSize: 16),
+            cursorColor: Colors.blue,
+          ),
+        ),
         bottom: TabBar(
           tabAlignment: TabAlignment.start,
           controller: _tabController,
@@ -170,6 +240,14 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
 
               final List<News> news = snapshot.data ?? [];
 
+              if (news.isEmpty) {
+                return Center(
+                  child: Text(
+                    '没有搜索到',
+                    style: TextStyle(fontSize: 24.0, color: Colors.grey),
+                  ),
+                );
+              }
               return SmartRefresher(
                 controller: refreshController,
                 enablePullDown: true,
