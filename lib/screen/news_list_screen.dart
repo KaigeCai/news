@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
@@ -188,8 +187,16 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
                   releaseText: '松开刷新',
                   refreshingText: '正在刷新...',
                   completeText: '刷新完成',
+                  failedText: '刷新失败',
+                  canTwoLevelText: '松开二级刷新',
                 ),
-                footer: PullUpFooter(),
+                footer: ClassicFooter(
+                  idleText: '上拉加载更多',
+                  loadingText: '正在加载中...',
+                  canLoadingText: '松开加载',
+                  noDataText: '没有更多数据了',
+                  failedText: '加载失败，请重试',
+                ),
                 child: ListView.builder(
                   controller: _scrollController,
                   itemCount: news.length,
@@ -212,50 +219,10 @@ class _NewsListScreenState extends State<NewsListScreen> with SingleTickerProvid
                 );
               },
               mini: true,
+              shape: CircleBorder(),
               child: Icon(Icons.arrow_upward, color: Colors.blueAccent),
             )
           : Container(),
-    );
-  }
-}
-
-class PullUpFooter extends StatelessWidget {
-  const PullUpFooter({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomFooter(
-      builder: (BuildContext context, LoadStatus? mode) {
-        Widget body;
-        if (mode == LoadStatus.idle) {
-          body = Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(CupertinoIcons.up_arrow),
-              Text('上拉加载更多'),
-            ],
-          );
-        } else if (mode == LoadStatus.loading) {
-          body = Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(strokeWidth: 2),
-              SizedBox(width: 10),
-              Text('正在加载中...'),
-            ],
-          );
-        } else if (mode == LoadStatus.failed) {
-          body = Text('加载失败！点击重试！');
-        } else if (mode == LoadStatus.canLoading) {
-          body = Text('释放加载更多');
-        } else {
-          body = Text('没有更多数据了');
-        }
-        return SizedBox(
-          height: 55.0,
-          child: Center(child: body),
-        );
-      },
     );
   }
 }
